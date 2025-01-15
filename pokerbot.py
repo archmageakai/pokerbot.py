@@ -41,7 +41,7 @@ def main():
     area = "for"
     room = "bar"
     character = "akai"
-    name = "pokerplayer"
+    name = input("Enter your username: ")
     password = "akai"
 
     if len(sys.argv) > 1:
@@ -141,7 +141,7 @@ def handle_giko_message(msg):
     global awaiting_hand, awaiting_result
 
     # Detect poker hand message
-    hand_match = re.search(r"pokerplayer's hand is now \((.*?)\)", msg)
+    hand_match = re.search(f"{Users.get(my_id, anon_name)}'s hand is now \((.*?)\)", msg)
     if hand_match and not awaiting_result:
         hand = hand_match.group(1)
         print(f"Current hand: {hand}")
