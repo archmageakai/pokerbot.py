@@ -153,7 +153,7 @@ def handle_giko_message(msg):
         return
 
     # Detect result message
-    if "Congrats" in msg or "lost" in msg:
+    if ("Congrats" in msg or "lost" in msg) and Users.get(my_id, anon_name) in msg:
         print(f"Game result detected: {msg}")
         awaiting_result = False
         time.sleep(1)  # Add delay before sending the next !poker

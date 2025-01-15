@@ -1,5 +1,6 @@
-pokerbot interacts with giko.py in bar, pick your bet amount at start.\
+pokerbot interacts with giko.py in bar @ https://play.gikopoi.com..\
+enter a username (trips are accepted just add user#password..) and enter a bet amount.
 
-To do: 
-1. bet based on percentage of your gikocoins
-2. prompt for picking name and searching that name for the loop (need to include way to incorporate tripcodes for this too)
+### To do: 
+- Option to select other bet modes such as bet based on selected percentage of your gikocoins
+- add logic explanation here
