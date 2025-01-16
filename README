@@ -2,3 +2,7 @@ pokerbot.py interacts with giko.py in bar @ https://play.gikopoi.com
 
 -enter a username (trips are accepted just add user#password..)
 -choose to do (1) static bet amount or (2) percentage of your balance
+
+To Do:
+-improve on ignoring or avoiding interruptions
+-if bot gets stuck, create an auto-reset

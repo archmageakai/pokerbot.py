@@ -168,11 +168,11 @@ def server_msg(event, namespace):
     if len(namespace) == 0:
         return
 
-    tstamp = datetime.datetime.now().strftime("%H:%M")
-    print('{} < {} > {}'.format(tstamp, author, namespace))
-
-    # Check if the message is from giko.py
-    if author == "giko.py":
+    # Only process messages from giko.py and containing the bot's username
+    bot_username = Users.get(my_id, anon_name)
+    if author == "giko.py" and bot_username in namespace:
+        tstamp = datetime.datetime.now().strftime("%H:%M")
+        print(f'{tstamp} < {author} > {namespace}')
         handle_giko_message(namespace)
 
 def handle_giko_message(msg):
