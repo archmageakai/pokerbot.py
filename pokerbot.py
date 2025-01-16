@@ -205,7 +205,7 @@ def handle_giko_message(msg):
     # Process if bet_choice is 2 (Percentage of coins)
     if bet_choice == 2:
         # Detect balance, to determine percentage of balance for bet amount
-        balance_match = re.search(r"(\d+) gikocoins", msg)
+        balance_match = re.search(rf"{Users.get(my_id, anon_name)}.*?(\d+) gikocoins", msg)
         if balance_match:
             current_coins = int(balance_match.group(1))  # Extract the current amount of gikocoins
             bet_amount = max(1, round((current_coins * percentage) / 100)) #minimum 1, rounds the bet_amount
