@@ -3,7 +3,7 @@ import time
 import socketio
 import requests
 import sys
-import re  # For parsing messages
+import re
 
 sio = socketio.Client()
 session = requests.Session()
@@ -18,25 +18,53 @@ seen = {}
 awaiting_hand = False  # To track if we are waiting for a hand
 awaiting_result = False  # To track if we are waiting for a result
 bet_amount = 0  # Variable to store the bet amount
+current_coins = None  # Variable to store the current amount of gikocoins
+percentage = None  # Variable to store the percentage for bet calculation
 
 def upd_seen(username):
     seen[username] = datetime.datetime.now().strftime("%H:%M:%S")
 
 def get_bet():
-    global bet_amount
+    global bet_amount, current_coins, bet_choice, percentage
+
     while True:
-        try:
-            bet_input = input("What do you want to bet? Enter a number: ")
-            bet_amount = int(bet_input)
-            if bet_amount <= 0:
-                print("Bet must be a positive number.")
-            else:
-                break
-        except ValueError:
-            print("Please enter a valid number.")
+        print("Choose your betting method:")
+        print("1. Fixed amount")
+        print("2. Percentage of coins")
+        choice = input("Enter 1 or 2: ")
+
+        if choice == "1":
+            bet_choice = 1
+            while True:
+                try:
+                    bet_amount = int(input("Enter the fixed amount you want to bet: "))
+                    if bet_amount <= 0:
+                        print("Bet must be a positive number.")
+                    else:
+                        break
+                except ValueError:
+                    print("Please enter a valid number.")
+            break
+
+        elif choice == "2":
+            bet_choice = 2
+            while True:
+                try:
+                    percentage = float(input("Enter the percentage of coins you want to bet (e.g., 10 for 10%): "))
+                    if percentage <= 0 or percentage > 100.0:
+                        print("Percentage must be anything above 0 and less than or equal to 100.")
+                    else:
+                        break
+                except ValueError:
+                    print("Please enter a valid percentage.")
+            break
+
+        else:
+            print("Invalid choice. Please enter 1 or 2.")
 
 def main():
-    global api, awaiting_hand
+    global api, awaiting_hand, bet_amount, current_coins
+
     server = "play.gikopoi.com"
     area = "for"
     room = "bar"
@@ -58,9 +86,15 @@ def main():
     print([Users[u] for u in Users])
 
     # Start poker automation with the bet amount
-    send_message(f"!poker {bet_amount}")
-    awaiting_hand = True
-
+    if bet_choice == 1:
+        send_message(f"!poker {bet_amount}")
+        awaiting_hand = True
+    
+    balance_requested = False
+    if bet_choice == 2 and not balance_requested:
+        send_message(f"!balance")
+        balance_requested = True
+        
     while True:
         val = input()
         if len(val):
@@ -101,12 +135,16 @@ def get_users(s: requests.Session, server, area, room):
     print("[+] Get Rooms Users")
     val = s.get(f'{server}{api}/areas/{area}/rooms/{room}',
                 headers={"Authentication": f"Bearer {pid}"})
-    if val.status_code == 200:
+    
+    # Check if the response is successful
+    if val.ok:  # Use .ok to check if the status code is in the 200 range
         users = val.json()['connectedUsers']
         for user in users:
             Users[user['id']] = user['name'] or anon_name
             if Users[user['id']].strip():
                 upd_seen(Users[user['id']])
+    else:
+        print(f"Failed to get users, status code: {val.status_code}")
 
 def send_message(msg):
     sio.emit("user-msg", msg)
@@ -138,27 +176,64 @@ def server_msg(event, namespace):
         handle_giko_message(namespace)
 
 def handle_giko_message(msg):
-    global awaiting_hand, awaiting_result
+    global awaiting_hand, awaiting_result, bet_amount, current_coins, bet_choice, percentage
 
-    # Detect poker hand message
-    hand_match = re.search(f"{Users.get(my_id, anon_name)}'s hand is now \((.*?)\)", msg)
-    if hand_match and not awaiting_result:
-        hand = hand_match.group(1)
-        print(f"Current hand: {hand}")
-        if awaiting_hand:
-            time.sleep(1)  # Wait for 1 second before discarding cards
-            discard_cards(hand)
-            awaiting_hand = False
-            awaiting_result = True
-        return
+    # Process if bet_choice is 1 (Fixed amount)
+    if bet_choice == 1:
+        # Detect poker hand message
+        hand_match = re.search(f"{Users.get(my_id, anon_name)}'s hand is now \((.*?)\)", msg)
+        if hand_match and not awaiting_result:
+            hand = hand_match.group(1)
+            print(f"Current hand: {hand}")
+            if awaiting_hand:
+                time.sleep(1)  # Wait for 1 second before discarding cards
+                discard_cards(hand)
+                awaiting_hand = False
+                awaiting_result = True
+            return
 
-    # Detect result message
-    if ("Congrats" in msg or "lost" in msg) and Users.get(my_id, anon_name) in msg:
-        print(f"Game result detected: {msg}")
-        awaiting_result = False
-        time.sleep(1)  # Add delay before sending the next !poker
-        send_message(f"!poker {bet_amount}")
-        awaiting_hand = True
+        # Detect result message
+        if ("Congrats" in msg or "lost" in msg) and Users.get(my_id, anon_name) in msg:
+            print(f"Game result detected: {msg}")
+            awaiting_result = False
+            time.sleep(1)  # Add delay before sending the next !poker
+            if bet_amount > 0:  # Ensure bet_amount is valid
+                send_message(f"!poker {bet_amount}")
+                awaiting_hand = True
+        # end process if bet_choice is 1
+
+    # Process if bet_choice is 2 (Percentage of coins)
+    if bet_choice == 2:
+        # Detect balance, to determine percentage of balance for bet amount
+        balance_match = re.search(r"(\d+) gikocoins", msg)
+        if balance_match:
+            current_coins = int(balance_match.group(1))  # Extract the current amount of gikocoins
+            bet_amount = max(1, round((current_coins * percentage) / 100)) #minimum 1, rounds the bet_amount
+            print(f"Current balance: {current_coins} gikocoins")
+            print(f"Betting {bet_amount} gikocoins ({percentage}% of current balance: {current_coins})")
+            time.sleep(1)
+            send_message(f"!poker {bet_amount}")
+            awaiting_hand = True  
+        
+        # Detect poker hand message
+        hand_match = re.search(f"{Users.get(my_id, anon_name)}'s hand is now \((.*?)\)", msg)
+        if hand_match and not awaiting_result:
+            hand = hand_match.group(1)
+            print(f"Current hand: {hand}")
+            if awaiting_hand:
+                time.sleep(1)  # Wait for 1 second before discarding cards
+                discard_cards(hand)
+                awaiting_hand = False
+                awaiting_result = True
+            return
+
+        # Detect result message
+        if ("Congrats" in msg or "lost" in msg) and Users.get(my_id, anon_name) in msg:
+            print(f"Game result detected: {msg}")
+            awaiting_result = False
+            time.sleep(1)  # Add delay before sending the next !poker
+            awaiting_hand = True
+            #add in the same loop, but adjust it so that bet amount is adjusted after Congrats or lost messages.
 
 from collections import Counter
 
