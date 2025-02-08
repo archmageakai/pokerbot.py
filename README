@@ -3,8 +3,20 @@ python3 pokerbot.py [room here, if blank defaults to bar]
 refer to rooms.txt for rooms id
 
 -enter a username (trips are accepted just add user#password..)
--choose to do (1) static bet amount or (2) percentage of your balance
+-choose to do (1) static bet amount or (2) percentage of your balance***
 
-To Do:
--improve on ignoring or avoiding interruptions
--if bot gets stuck, create an auto-reset
+--- UPDATES ---
+
+*** giko.py now has a CAPCODE, so this bot will recognize messages from giko.py◆BOT only now
+    prior to this, the bot could not run, so now that is fixed.
+
+*** Please note that giko.py poker has been updated to cap bet amounts at 1000
+    if you do use percentage of balance, giko.py makes any bet >1000 to 1000
+    this bot is still functional, and you can still use bet percentages
+    just know that anything >1000 for bets, just use static bets for 1000
+    although even if you don't, giko.py wont rob your money!
+
+--- To Do List ---
+*** improve on ignoring or avoiding interruptions
+
+*** if bot gets stuck, create an auto-reset

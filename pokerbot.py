@@ -168,9 +168,9 @@ def server_msg(event, namespace):
     if len(namespace) == 0:
         return
 
-    # Only process messages from giko.py and containing the bot's username
+    # giko.py◆BOT is bot name with CAPCODE, recently gained CAPCODE
     bot_username = Users.get(my_id, anon_name)
-    if author == "giko.py" and bot_username in namespace:
+    if author == "giko.py◆BOT" and bot_username in namespace:
         tstamp = datetime.datetime.now().strftime("%H:%M")
         print(f'{tstamp} < {author} > {namespace}')
         handle_giko_message(namespace)
