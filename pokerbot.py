@@ -209,8 +209,12 @@ def handle_giko_message(msg):
         if balance_match:
             current_coins = int(balance_match.group(1))  # Extract the current amount of gikocoins
             bet_amount = max(1, round((current_coins * percentage) / 100)) #minimum 1, rounds the bet_amount
-            print(f"Current balance: {current_coins} gikocoins")
-            print(f"Betting {bet_amount} gikocoins ({percentage}% of current balance: {current_coins})")
+            if bet_amount > 1000:
+                bet_amount = 1000;
+                print(f"Betting {bet_amount} gikocoins (max amount of coins allowed to bet)")
+            else:
+                print(f"Current balance: {current_coins} gikocoins")
+                print(f"Betting {bet_amount} gikocoins ({percentage}% of current balance: {current_coins})")
             time.sleep(1)
             send_message(f"!poker {bet_amount}")
             awaiting_hand = True  

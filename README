@@ -7,14 +7,17 @@ refer to rooms.txt for rooms id
 
 --- UPDATES ---
 
-*** giko.py now has a CAPCODE, so this bot will recognize messages from giko.py◆BOT only now
-    prior to this, the bot could not run, so now that is fixed.
+*** giko.py now has a CAPCODE, so this bot will recognize messages from 
+    "giko.py◆BOT" only now prior to this, the bot could not run, so now 
+    that is fixed.
 
 *** Please note that giko.py poker has been updated to cap bet amounts at 1000
-    if you do use percentage of balance, giko.py makes any bet >1000 to 1000
     this bot is still functional, and you can still use bet percentages
-    just know that anything >1000 for bets, just use static bets for 1000
-    although even if you don't, giko.py wont rob your money!
+    There is now a condition that if your percentage of balance bet is >1000,
+    the bet will automatically be set to 1000 gikocoins.
+    Bet away with this bot at percentage, and you'll be quickly on your way
+    to betting at the new max bet of 1000 gikocoins!
+    (took me 10min with a starting balance of 1000 gikocoins!!)
 
 --- To Do List ---
 *** improve on ignoring or avoiding interruptions
